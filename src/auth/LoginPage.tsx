@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -15,6 +17,7 @@ export default function LoginPage() {
     const { error } = await signIn(email, password)
     setSubmitting(false)
     if (error) setError(error)
+    else navigate('/')
   }
 
   return (
