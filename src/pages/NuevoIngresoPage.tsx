@@ -89,33 +89,65 @@ export default function NuevoIngresoPage() {
 
     for (const [cajitaId, montoAsignado] of Object.entries(asignaciones)) {
       if (montoAsignado <= 0) continue
-      await supabase.from('aporte_cajita').insert({
+      const { error: aporteError } = await supabase.from('aporte_cajita').insert({
         user_id: session.user.id,
         ingreso_mensual_id: ingreso.id,
         cajita_id: cajitaId,
         monto: montoAsignado,
       })
+      if (aporteError) {
+        setError(
+          aporteError.message ??
+            'Error guardando el reparto, revisa tus cajitas y deudas antes de intentar de nuevo'
+        )
+        setSaving(false)
+        return
+      }
       const cajita = cajitas.find((c) => c.id === cajitaId)
       if (cajita) {
-        await supabase
+        const { error: cajitaError } = await supabase
           .from('cajita')
           .update({ valor_ahorrado: cajita.valor_ahorrado + montoAsignado })
           .eq('id', cajitaId)
+        if (cajitaError) {
+          setError(
+            cajitaError.message ??
+              'Error guardando el reparto, revisa tus cajitas y deudas antes de intentar de nuevo'
+          )
+          setSaving(false)
+          return
+        }
       }
     }
 
     for (const deuda of deudas.filter((d) => d.activo)) {
       const nuevasCuotas = deuda.cuotas_pagadas + 1
-      await supabase
+      const { error: deudaError } = await supabase
         .from('deuda')
         .update({
           cuotas_pagadas: nuevasCuotas,
           activo: nuevasCuotas < deuda.total_cuotas,
         })
         .eq('id', deuda.id)
+      if (deudaError) {
+        setError(
+          deudaError.message ??
+            'Error guardando el reparto, revisa tus cajitas y deudas antes de intentar de nuevo'
+        )
+        setSaving(false)
+        return
+      }
     }
 
-    await setSaldoLibreValor(saldoLibre + dineroLibreResultante, session.user.id)
+    const { error: saldoError } = await setSaldoLibreValor(
+      saldoLibre + dineroLibreResultante,
+      session.user.id
+    )
+    if (saldoError) {
+      setError('Error guardando el reparto, revisa tus cajitas y deudas antes de intentar de nuevo')
+      setSaving(false)
+      return
+    }
     await Promise.all([refreshCajitas(), refreshDeudas()])
 
     setSaving(false)

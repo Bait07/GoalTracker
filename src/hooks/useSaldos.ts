@@ -22,8 +22,11 @@ export function useSaldos() {
   }, [refresh])
 
   async function setSaldoLibreValor(nuevoValor: number, userId: string) {
-    await supabase.from('saldo_libre').upsert({ user_id: userId, valor_actual: nuevoValor })
+    const { error } = await supabase
+      .from('saldo_libre')
+      .upsert({ user_id: userId, valor_actual: nuevoValor })
     await refresh()
+    return { error }
   }
 
   async function setFondoEmergenciaValor(nuevoValor: number, userId: string) {
