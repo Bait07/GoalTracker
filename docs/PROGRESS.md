@@ -20,3 +20,7 @@
 
 MVP complete. Next ideas (not built yet): editing past `ingreso_mensual`
 records, exporting reports, multi-user support.
+
+## Known limitations
+
+- The "Nuevo ingreso" write sequence (income → cajitas → deudas → saldo libre) is not a single atomic transaction — Supabase's REST API doesn't support multi-table transactions without a Postgres RPC function. If a write fails partway through, the app stops and shows an error instead of continuing silently, but manually retrying after a partial failure could double-count an already-applied cajita contribution. Low risk for single-user local use; worth hardening into a Postgres RPC function if this app ever sees concurrent users or unreliable networks.

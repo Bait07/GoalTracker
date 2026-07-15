@@ -38,7 +38,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="border rounded p-3">
           <p className="text-xs text-gray-500">Saldo libre</p>
-          <p className="font-medium">${saldoLibre.toLocaleString('es-CO')}</p>
+          <p className={`font-medium ${saldoLibre < 0 ? 'text-red-600' : ''}`}>${saldoLibre.toLocaleString('es-CO')}</p>
         </div>
         <div className="border rounded p-3">
           <p className="text-xs text-gray-500">Fondo emergencia</p>
